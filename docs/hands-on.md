@@ -141,7 +141,7 @@ workflow を動かすマシン（runner）は、毎回まっさらな状態で�
 
 ## STEP 4: 自分の action を作る
 
-`.github/actions/greet/action.yml` を新規作成します。
+リポジトリのルートに `action.yml` を新規作成します。
 
 ```yaml
 name: greet
@@ -155,30 +155,85 @@ runs:
 ```
 
 `.github/workflows/hello-world.yml` の `steps` を、次のように書き換えます。
+`<owner>` は自分の GitHub アカウント名です。
 
 ```yaml
     steps:
-      - uses: actions/checkout@v7
-      - uses: ./.github/actions/greet
+      - uses: <owner>/github-actions-hands-on@main
 ```
-
-2 つのファイルとも `main` へ直接コミットしてください。
 
 ### 手順（ブラウザの場合）
 
 1. リポジトリのトップで `Add file` → `Create new file`
-2. ファイル名の欄に `.github/actions/greet/action.yml` と入力する
-   - `/` を打つとフォルダとして扱われるので、先に階層を作る必要はありません
-3. 上の内容を貼り付けてコミットする
-4. `.github/workflows/hello-world.yml` を開き、`steps` を書き換えてコミットする
+2. ファイル名の欄に `action.yml` と入力する
+3. 上の内容を貼り付け、`main` へ直接コミットする
+4. `.github/workflows/hello-world.yml` を開き、`steps` を書き換えて `main` へ直接コミットする
+
+**3 と 4 の順序を守ってください。**
+workflow が参照するのは `main` 上の `action.yml` です。
+先に workflow だけを書き換えると、参照先がまだ存在せず失敗します。
+
+### 呼び方が STEP 3 と同じであること
+
+STEP 3 では `actions/checkout@v7` と書きました。
+STEP 4 で書くのは `<owner>/github-actions-hands-on@main` です。
+
+どちらも `<owner>/<repo>@<ref>` の形で、書き方に違いはありません。
+自作の action だからといって、特別な呼び方を覚える必要はありません。
+
+### checkout が要らない理由
+
+STEP 3 では、README.md を読むために `actions/checkout` が必要でした。
+STEP 4 では要りません。
+
+`uses` に書いた action は、job が始まる前に runner が GitHub から取得します。
+リポジトリのファイルとして読むわけではないので、checkout とは経路が別です。
+
+### 本来はタグを固定する
+
+`@main` は、main の先頭を指す可変の参照です。
+main が進むと、呼び出し側も黙って変わります。
+
+STEP 3 で `@v7` と固定したのと同じ理由で、配布する action にはタグを切ります。
+今日は手数を減らすため `@main` のままにしています。
 
 ### 詰まりやすいところ
 
 - composite action の `run` step には `shell` の指定が必要です。
   書かないと `Required property is missing: shell` で失敗します。
   `uses` の step には逆に書けません。
-- リポジトリ内の action は `checkout` の後でないと呼べません。
-  `./.github/actions/greet` はファイルパスなので、runner 上にファイルが置かれている必要があります。
+- `action.yml` はリポジトリのルートに置きます。
+  `.github/` の下ではありません。
+
+## 発展: 1 つのリポジトリに複数の action を置く
+
+時間が余った人向けです。
+
+ルートの `action.yml` はそのままに、`actions/bye/action.yml` を追加します。
+
+```yaml
+name: bye
+description: 別れの挨拶を出力する
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: echo "Bye!"
+```
+
+リポジトリ名のあとにディレクトリを続けると呼び出せます。
+
+```yaml
+    steps:
+      - uses: <owner>/github-actions-hands-on@main
+      - uses: <owner>/github-actions-hands-on/actions/bye@main
+```
+
+`@main` の位置は変わりません。
+参照の形は `<owner>/<repo>/<path>@<ref>` です。
+
+1 つのリポジトリで複数の action を配る使い方は、公開されている action にもあります。
 
 ## 困ったとき
 
@@ -188,7 +243,7 @@ runs:
 | コミットしたのに実行されない | ブランチを切ってコミットしている。`main` へ直接コミットする |
 | `cat: README.md: No such file or directory` | `actions/checkout` の step がない |
 | `Required property is missing: shell` | composite action の `run` step に `shell: bash` がない |
-| `Can't find 'action.yml'` | パスが違う。`checkout` より前で呼んでいる場合も同じエラーになる |
+| `Unable to resolve action ...` | `action.yml` をまだ `main` にコミットしていない。または `<owner>` が自分のアカウント名になっていない |
 
 ## この先
 
