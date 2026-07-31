@@ -16,4 +16,3 @@ GitHub Actions を初めて触る人向けのハンズオン用リポジトリ�
 
 - `.github/workflows/hello-world.yml` — 出発点となる workflow
 
-作業はすべてブラウザ上で完結します。
