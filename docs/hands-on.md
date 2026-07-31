@@ -200,10 +200,8 @@ STEP 3 で `@v7` と固定したのと同じ理由で、配布する action に�
 ### 詰まりやすいところ
 
 - composite action の `run` step には `shell` の指定が必要です。
-  書かないと `Required property is missing: shell` で失敗します。
-  `uses` の step には逆に書けません。
-- `action.yml` はリポジトリのルートに置きます。
-  `.github/` の下ではありません。
+    - 書かないと `Required property is missing: shell` で失敗します。
+    - `uses` の step には逆に書けません。
 
 ## 発展: 1 つのリポジトリに複数の action を置く
 
@@ -232,8 +230,6 @@ runs:
 
 `@main` の位置は変わりません。
 参照の形は `<owner>/<repo>/<path>@<ref>` です。
-
-1 つのリポジトリで複数の action を配る使い方は、公開されている action にもあります。
 
 ## 困ったとき
 
