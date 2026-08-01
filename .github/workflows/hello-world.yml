@@ -13,5 +13,5 @@ jobs:
       contents: read
 
     steps:
-      - run: echo "Hello, GitHub Actions!"
+      - run: echo "test Hello, GitHub Actions!"
       - run: date
